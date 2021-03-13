@@ -1,9 +1,8 @@
 import os
 from json import load, dumps
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-config_path = os.path.join(BASE_DIR, "config.json")
+config_path = "config.json"
 
 config = {}
 
