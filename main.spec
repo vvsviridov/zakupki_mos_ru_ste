@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['C:\\Users\\vyacheslav.sviridov\\OneDrive\\Projects\\zakupki_mos_ru_ste'],
+             pathex=['C:\\Users\\vyacheslav.sviridov\\OneDrive\\Projects\\zakupki_mos_ru_ste_0002\\zakupki_mos_ru_ste_0001'],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -30,4 +30,4 @@ exe = EXE(pyz,
           upx=True,
           upx_exclude=[],
           runtime_tmpdir=None,
-          console=False , icon='Apathae-Wren-Applications.ico')
+          console=False )

@@ -27,28 +27,30 @@ def api_post(url, query):
         logging.info('===> post JSON <===')
         logging.info(query)
         response = requests.post(url, headers=headers, json=query)
+        logging.debug(response.json())
         logging.info(f'Сервер вернул код {response.status_code}.')
-        return response.json()
+        return response.json(), response.status_code
     except Exception as e:
         logging.critical(e)
 
 
-def api_get(url):
-    try:
-        headers = {
-            'accept': '*/*',
-            'accept-encoding': 'gzip, deflate, br',
-            'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-            'origin': 'https://old.zakupki.mos.ru',
-            'referer': 'https://old.zakupki.mos.ru/',
-            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6)\
-                 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 \
-                     Safari/537.36',
-        }
-        logging.info('===> get JSON <===')
-        logging.info(url)
-        response = requests.get(url, headers=headers)
-        logging.info(f'Сервер вернул код {response.status_code}.')
-        return response.json()
-    except Exception as e:
-        logging.critical(e)
+# def api_get(url):
+#     try:
+#         headers = {
+#             'accept': '*/*',
+#             'accept-encoding': 'gzip, deflate, br',
+#             'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+#             'origin': 'https://old.zakupki.mos.ru',
+#             'referer': 'https://old.zakupki.mos.ru/',
+#             'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6)\
+#                  AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 \
+#                      Safari/537.36',
+#         }
+#         logging.info('===> get JSON <===')
+#         logging.info(url)
+#         response = requests.get(url, headers=headers)
+#         logging.debug(response.json())
+#         logging.info(f'Сервер вернул код {response.status_code}.')
+#         return response.json(), response.status_code
+#     except Exception as e:
+#         logging.critical(e)

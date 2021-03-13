@@ -29,9 +29,12 @@ def save_xl(filename, xldata, captions=None):
             return filename
         else:
             logging.warning('Файл не сохранён, список строк пустой!')
+            return ''
     except Exception as e:
         logging.critical(f'Не могу сохранить файл: {filename}')
         logging.critical(e)
+        # raise
+        return ''
 
 
 def read_xl(filename, is_captions=True):
