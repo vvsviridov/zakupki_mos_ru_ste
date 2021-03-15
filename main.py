@@ -7,6 +7,7 @@ from gui import show_gui
 logging.basicConfig(
     format='%(levelname)-8s [%(asctime)s] %(message)s',
     level=logging.INFO,
+    # level=logging.DEBUG,
     filename="cte_parser.log"
 )
 

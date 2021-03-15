@@ -2,6 +2,8 @@ import logging
 import os
 from api import api_post, api_get
 from xl import read_xl, save_xl
+from config import get_config_value
+from time import sleep
 
 
 logging.getLogger(__name__)
@@ -35,19 +37,31 @@ def get_ctes(keyword, count):
         "order": [{"field": "relevance", "desc": True}],
         "withCount": True
     }
-    response = api_post(url_post, query)
+    while True:
+        response_tuple = api_post(url_post, query)
+        if response_tuple[1] == 200:
+            response = response_tuple[0]
+            break
+        else:
+            sleep(get_config_value("keyword_pause"))
     if response.get('count', 0) == 0:
         logging.warn('Пост-запрос вернул 0 записей!')
-        return ['По ключевому слову ничего не найдено!']
+        return [[keyword, 'По ключевому слову ничего не найдено!']]
     else:
         for item in response.get('items', []):
             item_id = item.get("id", 0)
             url_get = ('https://old.zakupki.mos.ru'
                        f'/api/Cssp/Sku/GetEntity?id={item_id}')
-            item_data = api_get(url_get)
-            logging.info(
-                (f'Для id {item_id} get item data вернул'
-                 f' {item_data.get("id", "id не найден!")}'))
+            while True:
+                item_data_tuple = api_get(url_get)
+                if item_data_tuple[1] == 200:
+                    item_data = item_data_tuple[0]
+                    break
+                else:
+                    sleep(get_config_value("keyword_pause"))
+                logging.info(
+                    (f'Для id {item_id} get item data вернул'
+                     f' {item_data.get("id", "id не найден!")}'))
             result.append(
                 [
                     keyword,

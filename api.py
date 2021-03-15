@@ -28,7 +28,7 @@ def api_post(url, query):
         logging.info(query)
         response = requests.post(url, headers=headers, json=query)
         logging.info(f'Сервер вернул код {response.status_code}.')
-        return response.json()
+        return response.json(), response.status_code
     except Exception as e:
         logging.critical(e)
 
@@ -49,6 +49,6 @@ def api_get(url):
         logging.info(url)
         response = requests.get(url, headers=headers)
         logging.info(f'Сервер вернул код {response.status_code}.')
-        return response.json()
+        return response.json(), response.status_code
     except Exception as e:
         logging.critical(e)
