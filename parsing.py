@@ -1,145 +1,125 @@
 import logging
 import os
-from api import api_post
+
+from json import dumps
+from api import api_get
 from xl import read_xl, save_xl
 from config import get_config_value
 from time import sleep
-from tkinter import messagebox
+from urllib.parse import urlencode
 
 
 logging.getLogger(__name__)
 
 
-def get_ctes(keyword, count):
-    logging.info(f'Ключевое слово: {keyword}')
-    url_sku = 'https://old.zakupki.mos.ru/api/Cssp/Sku/PostQuery'
-    url_offer = 'https://old.zakupki.mos.ru/api/Cssp/Offer/PostQuery'
-    result = []
-    output = []
-    query_cte = {
-        "filter": {
-            "nameLike": None,
-            "costPerUnitGreatEqual": None,
-            "costPerUnitLessEqual": None,
-            "regionPaths": [],
-            "okpdPaths": [],
-            "vendorCodeLike": None,
-            "offersCountGreatEqual": None,
-            "offersCountLessEqual": None,
-            "keyword": keyword,
-            "partNumberLike": None,
-            "productionPaths": [],
-            "productionDirectoryPaths": [],
-            "characteristicFilter": [],
-            "vendorIdIn": None,
-            "hasOffers": None,
-            "state": "actual",
-            "entityStateIn": [1]
-        },
-        "take": count,
-        "skip": 0,
-        "order": [{"field": "relevance", "desc": True}],
-        "withCount": True
-    }
-    query_offers = {
-        "filter": {
-            "offerStateIdIn": [2],
-            "skuIdIn": [18800324],
-            "onlyMyOffer": False
-        },
-        "order": [{"field": "costPerUnit", "desc": False}],
-        "withCount": True,
-        "take": 10,
-        "skip": 0
-    }
+def get_url(skip=0):
+    return urlencode(
+        {"queryDto": dumps({
+            "filter": {
+                "typeIn": [1],
+                "publishDateGreatEqual": f"{get_config_value('start')} 00:00:00",
+                "publishDateLessEqual": f"{get_config_value('end')} 23:59:59",
+                "auctionSpecificFilter": {"stateIdIn": [19000004, 19000003]},
+                "needSpecificFilter": {},
+                "tenderSpecificFilter": {}
+            },
+            "order": [{"field": "relevance", "desc": True}],
+            "withCount": True,
+            "take": 50,
+            "skip": skip
+        })}
+    )
+
+
+def check_bets(bets):
+    min_bets = get_config_value('bet_from')
+    max_bets = get_config_value('bet_to')
+    if min_bets == 0 and max_bets == 0:
+        return True
+    if min_bets <= bets and max_bets >= bets:
+        return True
+    return False
+
+
+def get_page(page_num):
+    skip = page_num * 50
+    url = 'https://old.zakupki.mos.ru/api/Cssp/Purchase/Query?' + get_url(skip)
     while True:
-        response_tuple = api_post(url_sku, query_cte)
+        response_tuple = api_get(url)
         if response_tuple[1] == 200:
-            response = response_tuple[0]
-            break
+            return response_tuple[0]
         else:
             sleep(get_config_value("keyword_pause"))
-    if response.get('count', 0) == 0:
-        logging.warn('Пост-запрос вернул 0 записей!')
-        return [[keyword, 'По ключевому слову ничего не найдено!']]
-    else:
-        logging.info(f'Всего {response.get("count", 0)} СТЕ.')
-        logging.info(f'Получено {len(response.get("items", []))} СТЕ.')
-        for item in response.get('items', []):
-            item_id = item.get("id", 0)
-            item_offer_count = item.get("offersCount", 0)
-            offers = []
-            if item_offer_count != 0:
-                query_offers['filter']['skuIdIn'] = [item_id]
-                query_offers['take'] = item_offer_count
-                while True:
-                    offers_resp_tuple = api_post(url_offer, query_offers)
-                    if offers_resp_tuple[1] == 200:
-                        offers_resp = offers_resp_tuple[0]
-                        break
-                    else:
-                        sleep(get_config_value("ste_pause"))
-                for offer in offers_resp.get('items', []):
-                    offers.append(
-                        [
-                            offer.get('supplierName', 'Не найдено'),
-                            offer.get('supplierInn', 'Не найдено'),
-                            offer.get('costPerUnit', 'Не найдено'),
-                            ', '.join(offer.get('regionNames', 'Не найдено')),
-                        ]
-                    )
-            result.append(
-                [
-                    keyword,
-                    item.get('name', 'Не найдено'),
-                    item.get('id', 'Не найдено'),
-                    item.get('offersCount', 'Не найдено'),
-                    offers,
-                    (f"{item.get('productionCode', 'Не найдено') or ''} - "
-                     f" {item.get('productionDirectoryName', 'Не найдено').upper()}"),
-                ]
-            )
-        logging.info(f'Всего нашлось {len(result)} записей.')
-        output = merge_output(result)
-        return output
 
 
-def merge_output(items):
+def page_iterations():
     result = []
-    for item in items:
-        if len(item[4]) == 0:
-            result.append(item[:4] + ['']*4 + [item[5]])
-        if len(item[4]) >= 1:
-            result.append(item[:4] + item[4][0] + [item[5]])
-        if len(item[4]) > 1:
-            for offer in item[4][1:]:
-                result.append(['']*4 + offer + [''])
+    response = get_page(0)
+    if response.get('count', 0) == 0:
+        logging.warn('Запрос вернул 0 записей!')
+        return [['Ничего не найдено!']]
+    else:
+        count = response.get("count", 0)
+        logging.info(f'Всего {count} закупок.')
+        logging.info(f'Получено {len(response.get("items", []))} закупок.')
+        total_pages = count // 50 + 1
+        logging.info(f'Всего страниц {total_pages}.')
+        items = response.get('items', [])
+        result += page_handler(items)
+        for page_num in range(1, total_pages):
+            response = get_page(page_num)
+            items = response.get('items', [])
+            result += page_handler(items)
     return result
 
 
-def parser(filename):
+def page_handler(items):
+    result = []
+    for item in items:
+        item_id = item.get("auctionId", 0)
+        s_date = item.get('beginDate', '01.01.1970 00:00:00').split(' ')[0]
+        e_date = item.get('endDate', '01.01.1970 00:00:00')[:-3]
+        bets = item.get('offerCount', 0)
+        state = item.get('stateId', 'Не найдено')
+        if check_bets(bets) or state == 19000003:
+            result.append(
+                [
+                    item_id,
+                    item.get('name', 'Не найдено'),
+                    f'https://zakupki.mos.ru/auction/{item_id}',
+                    item.get('startPrice', 'Не найдено'),
+                    bets,
+                    item.get('federalLawName', 'Не найдено'),
+                    item.get('regionName', 'Не найдено'),
+                    f'с {s_date} до {e_date}',
+                    'Интеграция с РИС' if item.get(
+                        'isExternalIntegration', False) else 'Работа на портале',
+                ]
+            )
+    logging.info(f'Всего нашлось {len(result)} записей.')
+    return result
+
+
+def parser():
     save_to = os.path.join(
         os.getcwd(),
-        f'parsed_{os.path.split(filename)[-1]}'
+        'parsed_zakup_procedure.xlsx'
     )
-    items = []
-    rows = read_xl(filename)
-    for row in rows:
-        items += get_ctes(*row)
+    items = page_iterations()
     added_rows = len(items)
     saved_file = save_xl(
         save_to,
         items,
         [
-            'Ключевое слово',
+            '№',
             'Наименование',
-            'ID СТЕ',
-            'Количество предложений',
-            'Поставщик',
-            'ИНН',
-            'Цена',
-            'Регион поставки',
-            'КПГЗ'
+            'Ссылка',
+            'Начальная цена',
+            'Ставки',
+            'Закон',
+            'Регион',
+            'Время проведения',
+            'Работа/интеграция'
         ]
     )
     return added_rows, saved_file

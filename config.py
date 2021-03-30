@@ -7,12 +7,16 @@ config_path = "config.json"
 config = {}
 
 
-def save_config(kp, sp):
+def save_config(sp, sd, ed, bf, bt):
     with open(config_path, 'w') as config_file:
         config_file.write(dumps(
             {
-                "keyword_pause": kp,
-                "ste_pause": sp
+                # "keyword_pause": kp,
+                "ste_pause": sp,
+                "start": sd,
+                "end": ed,
+                "bet_from": bf,
+                "bet_to": bt,
             }
         ))
     load_config()
@@ -28,6 +32,6 @@ def get_config_value(name):
 
 
 if not os.path.isfile(config_path):
-    save_config(20, 1)
+    save_config(1, "22.05.2021", "23.05.2021", 0, 0)
 
 load_config()

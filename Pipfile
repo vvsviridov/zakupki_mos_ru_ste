@@ -11,6 +11,8 @@ autopep8 = "*"
 requests = "*"
 openpyxl = "*"
 pyinstaller = "*"
+tkcalendar = "*"
+lxml = "*"
 
 [requires]
 python_version = "3.7"
