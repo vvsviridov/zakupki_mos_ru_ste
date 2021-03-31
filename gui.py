@@ -16,7 +16,7 @@ logging.getLogger(__name__)
 def parser_process(st_text, start_cal, end_cal, bet_from_text, bet_to_text):
     save_config(int(st_text.get()),
                 start_cal.get_date(), end_cal.get_date(),
-                int(bet_from_text.get()), int(bet_to_text.get()))
+                bet_from_text.get(), bet_to_text.get())
     result = parser()
     if os.path.isfile(result[1]):
         messagebox.showinfo(
@@ -37,7 +37,6 @@ def show_gui():
     window.title("Закупочные процедуры:")
     window.geometry('300x700+300+300')
     window.resizable(False, False)
-    # kw_pause_txt = StringVar(value=get_config_value("keyword_pause"))
     st_pause_txt = StringVar(value=get_config_value("ste_pause"))
     bet_from_txt = StringVar(value=get_config_value("bet_from"))
     bet_to_txt = StringVar(value=get_config_value("bet_to"))
@@ -46,10 +45,7 @@ def show_gui():
     end_date = datetime.strptime(
         get_config_value("end"), "%d.%m.%Y").timetuple()
 
-    # Label(window, text='Пауза между \nключевыми словами (сек):').pack(fill=X)
-    # kw_text = Entry(textvariable=kw_pause_txt)
-    # kw_text.pack(expand=YES)
-    Label(window, text='Пауза между офферами (сек):').pack(expand=YES)
+    Label(window, text='Пауза между запросами (сек):').pack(expand=YES)
     st_text = Entry(textvariable=st_pause_txt)
     st_text.pack(expand=YES)
 
@@ -62,8 +58,7 @@ def show_gui():
 
     Label(window, text='C:').pack(expand=YES)
     start_cal = Calendar(window, selectmode='day',
-                         foreground='red',
-                         selectforeground='red',
+                         locale='ru_RU',
                          year=start_date[0],
                          month=start_date[1],
                          day=start_date[2])
@@ -71,8 +66,7 @@ def show_gui():
     start_cal.pack(expand=YES)
     Label(window, text='По:').pack(expand=YES)
     end_cal = Calendar(window, selectmode='day',
-                       foreground='red',
-                       selectforeground='red',
+                       locale='ru_RU',
                        year=end_date[0],
                        month=end_date[1],
                        day=end_date[2])

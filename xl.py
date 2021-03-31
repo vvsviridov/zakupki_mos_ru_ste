@@ -37,34 +37,34 @@ def save_xl(filename, xldata, captions=None):
         return ''
 
 
-def read_xl(filename, is_captions=True):
-    """Read excel file
+# def read_xl(filename, is_captions=True):
+#     """Read excel file
 
-    Args:
-        filename (string): File name or /path/to/file
-        is_captions (bool, optional): If first row is captions. \
-            Defaults to True.
+#     Args:
+#         filename (string): File name or /path/to/file
+#         is_captions (bool, optional): If first row is captions. \
+#             Defaults to True.
 
-    Returns:
-        dict: {
-            "captions": [],
-            "rows": [[],[], ..., []]
-        }
-    """
-    try:
-        rows = None
-        wb = load_workbook(filename=filename, read_only=True)
-        ws = wb.active
-        ws_rows = ws.rows
-        if is_captions:
-            next(ws_rows)
-        rows = [(row[0].value, row[1].value) for row in ws_rows]
-        logging.info(rows)
-        return rows
-    except IOError as e:
-        logging.critical(f'Не могу прочитать файл: {filename}')
-        logging.critical(e)
-    except Exception as e:
-        logging.critical(f'Что-то пошло не так при чтении файла: {filename}')
-        logging.critical(e)
-    return []
+#     Returns:
+#         dict: {
+#             "captions": [],
+#             "rows": [[],[], ..., []]
+#         }
+#     """
+#     try:
+#         rows = None
+#         wb = load_workbook(filename=filename, read_only=True)
+#         ws = wb.active
+#         ws_rows = ws.rows
+#         if is_captions:
+#             next(ws_rows)
+#         rows = [(row[0].value, row[1].value) for row in ws_rows]
+#         logging.info(rows)
+#         return rows
+#     except IOError as e:
+#         logging.critical(f'Не могу прочитать файл: {filename}')
+#         logging.critical(e)
+#     except Exception as e:
+#         logging.critical(f'Что-то пошло не так при чтении файла: {filename}')
+#         logging.critical(e)
+#     return []

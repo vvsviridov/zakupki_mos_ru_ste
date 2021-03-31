@@ -32,6 +32,6 @@ def get_config_value(name):
 
 
 if not os.path.isfile(config_path):
-    save_config(1, "22.05.2021", "23.05.2021", 0, 0)
+    save_config(1, "22.05.2021", "23.05.2021", "", "")
 
 load_config()

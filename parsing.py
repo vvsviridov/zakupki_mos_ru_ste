@@ -3,7 +3,7 @@ import os
 
 from json import dumps
 from api import api_get
-from xl import read_xl, save_xl
+from xl import save_xl
 from config import get_config_value
 from time import sleep
 from urllib.parse import urlencode
@@ -31,12 +31,19 @@ def get_url(skip=0):
     )
 
 
+def bets_to_int(bets):
+    try:
+        return int(bets)
+    except Exception:
+        return 0
+
+
 def check_bets(bets):
     min_bets = get_config_value('bet_from')
     max_bets = get_config_value('bet_to')
-    if min_bets == 0 and max_bets == 0:
+    if min_bets == "" and max_bets == "":
         return True
-    if min_bets <= bets and max_bets >= bets:
+    if bets_to_int(min_bets) <= bets and bets_to_int(max_bets) >= bets:
         return True
     return False
 
