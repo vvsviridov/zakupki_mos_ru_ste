@@ -5,3 +5,4 @@ dist
 *.xlsx
 *.log
 *.json
+*.spec
