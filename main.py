@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# pyinstaller --hidden-import babel.numbers main.py -F -w -i Apathae-Wren-Applications.ico
+# pyinstaller --hidden-import babel.numbers main.py -F -w -i Hopstarter-Sleek-Xp-Basic-Document.ico
 import logging
 from gui import show_gui
 
